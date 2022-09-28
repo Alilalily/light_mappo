@@ -1,11 +1,15 @@
     
 import time
-import wandb
+# import wandb
 import os
 import numpy as np
 from itertools import chain
 import torch
+# from tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
+
 from tensorboardX import SummaryWriter
+
 
 from utils.separated_buffer import SeparatedReplayBuffer
 from utils.util import update_linear_schedule
@@ -55,7 +59,8 @@ class Runner(object):
                 os.makedirs(self.gif_dir)
         else:
             if self.use_wandb:
-                self.save_dir = str(wandb.run.dir)
+                # self.save_dir = str(wandb.run.dir)
+                pass
             else:
                 self.run_dir = config["run_dir"]
                 self.log_dir = str(self.run_dir / 'logs')
@@ -150,7 +155,8 @@ class Runner(object):
             for k, v in train_infos[agent_id].items():
                 agent_k = "agent%i/" % agent_id + k
                 if self.use_wandb:
-                    wandb.log({agent_k: v}, step=total_num_steps)
+                    # wandb.log({agent_k: v}, step=total_num_steps)
+                    pass
                 else:
                     self.writter.add_scalars(agent_k, {agent_k: v}, total_num_steps)
 
@@ -158,6 +164,7 @@ class Runner(object):
         for k, v in env_infos.items():
             if len(v) > 0:
                 if self.use_wandb:
-                    wandb.log({k: np.mean(v)}, step=total_num_steps)
+                    # wandb.log({k: np.mean(v)}, step=total_num_steps)
+                    pass
                 else:
                     self.writter.add_scalars(k, {k: np.mean(v)}, total_num_steps)
