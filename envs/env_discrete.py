@@ -9,12 +9,13 @@ import gym
 from gym import spaces
 import numpy as np
 from envs.env_core import EnvCore
+from envs.env_detnet import EnvDetnet
 
 
 class DiscreteActionEnv(object):
     """对于离散动作环境的封装"""
     def __init__(self):
-        self.env = EnvCore()
+        self.env = EnvDetnet()
         self.num_agent = self.env.agent_num
 
         self.signal_obs_dim = self.env.obs_dim
@@ -23,7 +24,7 @@ class DiscreteActionEnv(object):
         # if true, action is a number 0...N, otherwise action is a one-hot N-dimensional vector
         self.discrete_action_input = False
 
-        self.movable = True
+        self.movable = True  # 因为在模型中是非连续动作，只需要有一个动作即可
 
         # configure spaces
         self.action_space = []
@@ -37,7 +38,7 @@ class DiscreteActionEnv(object):
             # physical action space
             u_action_space = spaces.Discrete(self.signal_action_dim)  # 5个离散的动作
 
-            if self.movable:
+            if self.movable: # 所以下面的代码不会执行，不会有total action space 
                 total_action_space.append(u_action_space)
 
             # total action space

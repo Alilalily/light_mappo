@@ -46,7 +46,7 @@ def make_eval_env(all_args):
 def parse_args(args, parser):
     parser.add_argument('--scenario_name', type=str, default='MyEnv', help="Which scenario to run on")
     parser.add_argument("--num_landmarks", type=int, default=3)
-    parser.add_argument('--num_agents', type=int, default=2, help="number of players")
+    parser.add_argument('--num_agents', type=int, default=42, help="number of players")
 
     all_args = parser.parse_known_args(args)[0]
 
@@ -131,6 +131,7 @@ def main(args):
 
     runner = Runner(config)
     runner.run()
+    # runner.eval(1e5)
 
     # post process
     envs.close()

@@ -121,7 +121,7 @@ def get_config():
         --clone_coef <float>
             clone term coefficient (default: 0.01)
     
-    Run parameters：
+    Run parameters:
         --use_linear_lr_decay
             by default, do not apply linear decay to learning rate. If set, use a linear schedule on the learning rate
     
@@ -167,7 +167,7 @@ def get_config():
                         action='store_false', default=True, help="by default, make sure random seed effective. if set, bypass such function.")
     parser.add_argument("--n_training_threads", type=int,
                         default=1, help="Number of torch threads for training")
-    parser.add_argument("--n_rollout_threads", type=int, default=5,
+    parser.add_argument("--n_rollout_threads", type=int, default=1,
                         help="Number of parallel envs for training rollouts")
     parser.add_argument("--n_eval_rollout_threads", type=int, default=1,
                         help="Number of parallel envs for evaluating rollouts")
@@ -176,6 +176,7 @@ def get_config():
     parser.add_argument("--num_env_steps", type=int, default=10e3,
                         help='Number of environment steps to train (default: 10e6)')
     parser.add_argument("--user_name", type=str, default='marl',help="[for wandb usage], to specify user's name for simply collecting training data.")
+    parser.add_argument("--use_wandb",default=False)
 
     # env parameters
     parser.add_argument("--env_name", type=str, default='MyEnv', help="specify the name of environment")
@@ -281,6 +282,7 @@ def get_config():
     parser.add_argument("--ifi", type=float, default=0.1, help="the play interval of each rendered image in saved video.")
 
     # pretrained parameters
+    # parser.add_argument("--model_dir", type=str, default='../results/MyEnv/MyEnv/mappo/check/run13/models', help="by default None. set the path to pretrained model.")
     parser.add_argument("--model_dir", type=str, default=None, help="by default None. set the path to pretrained model.")
 
     return parser
