@@ -40,9 +40,11 @@ class DetNet:
         while dst == src:
             dst = np.random.randint(0, self.node_num)
         
+        length, path = nx.bidirectional_dijkstra(self.topo.nx_g, src, dst,weight="delay")
         period = np.random.randint(2, 9)
         pkg_len = np.random.randint(self.min_pkg_len, self.max_pkg_len)
-        delay = np.random.randint(self.min_delay, self.max_delay)
+        # delay = np.random.randint(self.min_delay, self.max_delay) 
+        delay = np.random.randint(length, self.max_delay)
         offset = np.random.randint(0, self.schedule_period)
         return [src, dst, period, pkg_len, delay, offset]
 
@@ -56,7 +58,10 @@ class DetNet:
             self.edge_que = np.full((self.link_num, self.que_num, self.schedule_period), self.que_len, dtype=int)
         obs.append(pkg_len)
         for i in range(self.que_num):
-            obs.append(self.edge_que[agent_id][i][(offset + i + 1) % self.schedule_period])
+            # obs.append(self.edge_que[agent_id][i][(offset + i + 1) % self.schedule_period])
+            for j in range(self.schedule_period):
+                obs.append(self.edge_que[agent_id][i][j])
+            # obs.append(self.edge_que[agent_id][i])
         
         return obs
 
@@ -80,28 +85,43 @@ class DetNet:
         # 判断src到dst的连通性
         if nx.has_path(f, src, dst):
             #双向搜索的迪杰斯特拉
-            length, path = nx.bidirectional_dijkstra(f, 4, 1,weight="delay")
+            length, path = nx.bidirectional_dijkstra(f, src, dst,weight="delay")
             # 遍历路径，看是否满足条件
             path_delay = length + sum(shifts) * self.slot // 1000
             if path_delay <= delay: # 如果时延满足要求，则对资源可用性进行判断
                 current_delay = 0
                 for k in range(0, (len(path) - 1)):
+                    flag = True
                     edge_id = self.topo.nx_g[path[k]][path[k + 1]]["id"]
                     shift = shifts[edge_id]
                     slot = (current_delay + shift) // self.schedule_period
                     current_delay += self.topo.link_delays[edge_id]
                     if self.edge_que[edge_id][shift - 1][slot] < pkg_len:
+                        flag = False
                         break
                     else :
                         self.edge_que[edge_id][shift - 1][slot] -= pkg_len
-                flag = True
+                
         # flow = self.get_flow
         reward = 0
         if flag:
-            reward = pkg_len
+            reward = 1
         else:
             self.edge_que = resource_copy.copy()
-        return reward
+
+
+        done = False
+        if np.min(self.edge_que) < self.min_pkg_len:
+            done = True
+        # dones = []
+        # for i in range(self.topo.link_num):
+        #     is_done = False
+        #     for j in range(self.que_num):
+        #         if np.all(self.edge_que[i][j] < self.min_pkg_len):
+        #             is_done = True
+        #             break
+        #     dones.append(is_done)
+        return reward, done
 
 
 
