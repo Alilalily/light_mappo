@@ -110,6 +110,7 @@ class DetNet:
         
 
         # reward = np.zeros(self.link_num)
+        reward = 0
         if flag:
             reward = 1
             # for e in valid_edge_id:
