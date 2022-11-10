@@ -6,7 +6,7 @@ class DetNet:
     """
     def __init__(self):
         self.topo = Graph() # 拓扑图
-        self.schedule_period = 9 # 调度周期 是所有流周期的最小公倍数
+        self.schedule_period = 30 # 调度周期 是所有流周期的最小公倍数
         self.slot = 125 # 单位是微秒
         self.min_pkg_len = 600 # 最大的数据包长度 单位 byte
         self.max_pkg_len = 1500
@@ -16,7 +16,7 @@ class DetNet:
         self.node_num = self.topo.node_num
         self.link_num = self.topo.link_num
 
-        self.flow_periods = [2, 3, 4, 5, 6, 7, 8, 9] # 流的周期范围，几倍的slot
+        self.flow_periods = [2, 3, 5, 6, 10, 15] # 流的周期范围，几倍的slot
         self.max_delay = 200
         self.min_delay = 80
 
@@ -27,7 +27,7 @@ class DetNet:
         #     ques = []
         #     ques.append(np.full((self.que_num,self.schedule_period), 2, dtype=int))
         #     self.edge_que.append(ques)
-    
+        self.dones = np.full(self.link_num, False)
 
     def get_flow(self):
         """
@@ -41,7 +41,7 @@ class DetNet:
             dst = np.random.randint(0, self.node_num)
         
         length, path = nx.bidirectional_dijkstra(self.topo.nx_g, src, dst,weight="delay")
-        period = np.random.randint(2, 9)
+        period = np.random.choice(self.flow_periods)
         pkg_len = np.random.randint(self.min_pkg_len, self.max_pkg_len)
         # delay = np.random.randint(self.min_delay, self.max_delay) 
         delay = np.random.randint(length, self.max_delay)
@@ -56,6 +56,7 @@ class DetNet:
         obs = []
         if is_reset:
             self.edge_que = np.full((self.link_num, self.que_num, self.schedule_period), self.que_len, dtype=int)
+            self.dones = np.full(self.link_num, False)
         obs.append(pkg_len)
         for i in range(self.que_num):
             # obs.append(self.edge_que[agent_id][i][(offset + i + 1) % self.schedule_period])
@@ -81,6 +82,7 @@ class DetNet:
         f.remove_edges_from(to_remove)
         
         resource_copy  = self.edge_que.copy()
+        valid_edge_id = []
         
         # 判断src到dst的连通性
         if nx.has_path(f, src, dst):
@@ -93,35 +95,47 @@ class DetNet:
                 for k in range(0, (len(path) - 1)):
                     flag = True
                     edge_id = self.topo.nx_g[path[k]][path[k + 1]]["id"]
+                    valid_edge_id.append(edge_id)
                     shift = shifts[edge_id]
-                    slot = (current_delay + shift) // self.schedule_period
+                    slot = (current_delay + shift) % self.schedule_period
                     current_delay += self.topo.link_delays[edge_id]
                     if self.edge_que[edge_id][shift - 1][slot] < pkg_len:
                         flag = False
                         break
                     else :
-                        self.edge_que[edge_id][shift - 1][slot] -= pkg_len
-                
-        # flow = self.get_flow
-        reward = 0
+                        times = self.schedule_period // period
+                        # print(times)
+                        for i in range(0, times) :
+                            self.edge_que[edge_id][shift - 1][(slot + i * period) % self.schedule_period] -= pkg_len
+        
+
+        # reward = np.zeros(self.link_num)
         if flag:
             reward = 1
+            # for e in valid_edge_id:
+            #     reward[e] = 1
         else:
             self.edge_que = resource_copy.copy()
 
+        # done的策略
+        # 一种是agent中只要有一个slot不能用，这个agent就是done
+        dones = []
+        for e in range(0, self.link_num):
+            if (np.min(self.edge_que[e]) < self.min_pkg_len):
+                dones.append(True)
+            else:
+                dones.append(False)
 
-        done = False
-        if np.min(self.edge_que) < self.min_pkg_len:
-            done = True
-        # dones = []
-        # for i in range(self.topo.link_num):
-        #     is_done = False
-        #     for j in range(self.que_num):
-        #         if np.all(self.edge_que[i][j] < self.min_pkg_len):
-        #             is_done = True
-        #             break
-        #     dones.append(is_done)
-        return reward, done
+        # 第二种是agent里所有的slot都不能用时，该agent就done
+        dones = []
+        for e in range(0, self.link_num):
+            if np.all(self.edge_que[e] < self.min_pkg_len):
+                dones.append(True)
+            else:
+                dones.append(False)
+        # print("reward is: %d", reward)
+
+        return reward, dones
 
 
 
