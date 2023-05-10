@@ -1,7 +1,6 @@
 """
-# @Time    : 2021/6/30 10:07 下午
-# @Author  : hezhiqiang
-# @Email   : tinyzqh@163.com
+# @Time    : 2023/4/25 15:07 下午
+
 # @File    : train.py
 """
 
@@ -44,7 +43,7 @@ def make_eval_env(all_args):
 
 
 def parse_args(args, parser):
-    parser.add_argument('--scenario_name', type=str, default='MyEnv', help="Which scenario to run on")
+    parser.add_argument('--scenario_name', type=str, default='DetNet', help="Which scenario to run on")
     parser.add_argument("--num_landmarks", type=int, default=3)
     parser.add_argument('--num_agents', type=int, default=42, help="number of players")
 

@@ -73,12 +73,14 @@ class DetNet:
         src, dst, period, pkg_len, delay, offset = flow
         # 从actions中获得每条边的action并将其从one-hot转化成数字, [0, 1, 2]
         shifts = [np.argmax(action) for action in actions]
-        links = [x for x in shifts if x != 0]
+        #TODO: 3/5/2023 修改了这一点，再给个机会跑一次 links = [x for x in shifts if x == 0] 这个一整个就是有错的
+        # links = [i for i, e in enumerate(shifts) if e != 0]
+        to_remove_links = [i for i, e in enumerate(shifts) if e != 0]
 
         flag = False
         # 新建一个图来验证该方案是否满足需求
         f = nx.DiGraph(self.topo.nx_g)         
-        to_remove = [(a,b) for a, b, attrs in self.topo.nx_g.edges(data=True) if attrs["id"] in links]
+        to_remove = [(a,b) for a, b, attrs in self.topo.nx_g.edges(data=True) if attrs["id"] in to_remove_links]
         f.remove_edges_from(to_remove)
         
         resource_copy  = self.edge_que.copy()
@@ -120,12 +122,12 @@ class DetNet:
 
         # done的策略
         # 一种是agent中只要有一个slot不能用，这个agent就是done
-        dones = []
-        for e in range(0, self.link_num):
-            if (np.min(self.edge_que[e]) < self.min_pkg_len):
-                dones.append(True)
-            else:
-                dones.append(False)
+        # dones = []
+        # for e in range(0, self.link_num):
+        #     if (np.min(self.edge_que[e]) < self.min_pkg_len):
+        #         dones.append(True)
+        #     else:
+        #         dones.append(False)
 
         # 第二种是agent里所有的slot都不能用时，该agent就done
         dones = []

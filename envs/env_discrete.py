@@ -1,7 +1,5 @@
 """
-# @Time    : 2021/7/2 5:22 下午
-# @Author  : hezhiqiang
-# @Email   : tinyzqh@163.com
+
 # @File    : env_discrete.py
 """
 

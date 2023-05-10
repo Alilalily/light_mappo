@@ -1,8 +1,5 @@
 """
-# @Time    : 2021/7/1 7:04 下午
-# @Author  : hezhiqiang01
-# @Email   : hezhiqiang01@baidu.com
-# @File    : huaru_runner.py
+
 """
 
 import time

@@ -51,6 +51,7 @@ def worker(remote, parent_remote, env_fn_wrapper):
     parent_remote.close()
     env = env_fn_wrapper.x()
     while True:
+        print("goes into worker's reset")
         cmd, data = remote.recv()
         if cmd == 'step':
             ob, reward, done, info = env.step(data)
@@ -270,7 +271,7 @@ class DummyVecEnv(ShareVecEnv):
     def step_wait(self):
         results = [env.step(a) for (a, env) in zip(self.actions, self.envs)]
         obs, rews, dones, infos = map(np.array, zip(*results))
-
+        # print("dummyVecEnv goes into step_wait")
         for (i, done) in enumerate(dones):
             if 'bool' in done.__class__.__name__:
                 if done:

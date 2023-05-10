@@ -67,17 +67,3 @@ class Graph(object):
 
 
 # bw_real = [8,32,64]  # 只有在计算剩余可用带宽和计算reward的数值时时这个，其他时候都是0，1，2
-
-
-
-# all_path = get_all_path(nx_g)
-
-# from scipy.stats import poisson
-# link_delay = poisson.rvs(mu=3, size=LINK_NUM,seed=1)
-
-# print(link_delay)
-# min = np.min(link_delay)
-# max = np.max(link_delay)
-# normal_delay = (link_delay-min) / (max-min)
-# print("normal_delay")
-# print(normal_delay)

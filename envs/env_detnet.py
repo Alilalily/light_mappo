@@ -37,7 +37,6 @@ class EnvDetnet(object):
         for i in range(self.agent_num):
             sub_agent_obs.append(self.detnet.get_obs(agent_id=i, pkg_len=pkg_len, offset=offset, is_reset=False))
             sub_agent_reward.append([rewards])
-            # sub_agent_done.append(done)
             sub_agent_info.append({})
         
         
